@@ -30,6 +30,15 @@ class User
 
 end
 
+module Main
+	class Group
+		include DataMapper::Resource
+
+		property :id, Serial
+		property :name, String, :required => true
+	end
+end
+
 describe 'every self referential m:m relationship', :shared => true do
 
   it "should establish a 1:m relationship to the intermediate model" do
@@ -169,5 +178,38 @@ describe DataMapper::Is::SelfReferential do
     it_should_behave_like 'every self referential m:m relationship'
 
   end
+
+  describe "with explict intermediate nested model name and customized options" do
+
+    before(:each) do
+
+      clear_remixed_models 'Main::GroupHeritage'
+
+      Main::Group.is :self_referential, :through => 'Main::GroupHeritage',
+        :children => :child_groups,
+        :parents  => :parent_groups,
+        :source   => :parent_group,
+        :target   => :child_group
+
+      DataMapper.auto_migrate!
+
+      @model               = Main::Group
+      @intermediate_model  = Main::GroupHeritage # implicitly test intermediate model generation
+      @intermediate_source = :parent_group
+      @intermediate_target = :child_group
+      @children_accessor   = :child_groups
+      @parents_accessor    = :parent_groups
+
+      @intermediate_name   = "main_group_#{@children_accessor}".to_sym
+      @target_name         = @children_accessor
+
+      @source_instance     = Main::Group.create(:name => 'Cool Group')
+
+    end
+
+    it_should_behave_like 'every self referential m:m relationship'
+
+  end
+
 
 end

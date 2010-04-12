@@ -4,16 +4,23 @@ module DataMapper
     module SelfReferential
 
       def is_self_referential(options = {})
+				# Given 'Nested::Module::ClassName'
+				# deepest_context = Nested::Module::
+				# self_model_name = ClassName
+				# ---
+				# Given 'ClassName'
+				# deepest_context = "::"
+				# self_model_name = ClassName
+				deepest_context, self_model_name = (self.name =~ /^(.*::)(.*)$/) ? [$1, $2] : ["::", self.name]
+				sane_self_model_name = self.name.gsub(/::/, "").snake_case
 
         options = {
-          :through     => "#{self.name}To#{self.name}",
+          :through     => "#{deepest_context}#{self_model_name}To#{self_model_name}",
           :children    => :children,
           :parents     => :parents,
           :source      => :source,
           :target      => :target
         }.merge!(options)
-
-        intermediate_model_name = options[:through]
 
         source_model       = self
         intermediate_model = Object.full_const_set(options[:through], Class.new)
@@ -30,8 +37,8 @@ module DataMapper
           belongs_to options[:target], target_model
         end
 
-        intermediate_children = "#{self.name.snake_case}_#{options[:children]}".to_sym
-        intermediate_parents  = "#{self.name.snake_case}_#{options[:parents ]}".to_sym
+        intermediate_children = "#{sane_self_model_name}_#{options[:children]}".to_sym
+        intermediate_parents  = "#{sane_self_model_name}_#{options[:parents ]}".to_sym
 
         has n, intermediate_children, intermediate_model, :child_key => [ source_fk ]
         has n, intermediate_parents,  intermediate_model, :child_key => [ target_fk ]
