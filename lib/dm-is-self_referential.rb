@@ -4,15 +4,15 @@ module DataMapper
     module SelfReferential
 
       def is_self_referential(options = {})
-				# Given 'Nested::Module::ClassName'
-				# deepest_context = Nested::Module::
-				# self_model_name = ClassName
-				# ---
-				# Given 'ClassName'
-				# deepest_context = "::"
-				# self_model_name = ClassName
-				deepest_context, self_model_name = (self.name =~ /^(.*::)(.*)$/) ? [$1, $2] : ["::", self.name]
-				sane_self_model_name = self.name.gsub(/::/, "").snake_case
+        # Given 'Nested::Module::ClassName'
+        # deepest_context = Nested::Module::
+        # self_model_name = ClassName
+        # ---
+        # Given 'ClassName'
+        # deepest_context = "::"
+        # self_model_name = ClassName
+        deepest_context, self_model_name = (self.name =~ /^(.*::)(.*)$/) ? [$1, $2] : ["::", self.name]
+        sane_self_model_name = self.name.gsub(/::/, "").snake_case
 
         options = {
           :through     => "#{deepest_context}#{self_model_name}To#{self_model_name}",
