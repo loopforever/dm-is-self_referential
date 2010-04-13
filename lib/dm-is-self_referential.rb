@@ -22,8 +22,10 @@ module DataMapper
           :target      => :target
         }.merge!(options)
 
+        Object.full_const_set(options[:through], Class.new)
+
         source_model       = self
-        intermediate_model = Object.full_const_set(options[:through], Class.new)
+        intermediate_model = Object.full_const_get(options[:through])
         target_model       = self
 
         source_fk = Extlib::Inflection.foreign_key(options[:source]).to_sym
