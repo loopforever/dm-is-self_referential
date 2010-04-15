@@ -37,12 +37,12 @@ class User
 end
 
 module Main
-	class Group
-		include DataMapper::Resource
+  class Group
+    include DataMapper::Resource
 
-		property :id, Serial
-		property :name, String, :required => true
-	end
+    property :id, Serial
+    property :name, String, :required => true
+  end
 
   class GroupHeritage
     include DataMapper::Resource
