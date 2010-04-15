@@ -1,3 +1,16 @@
+require 'dm-core'
+
+begin
+  require 'active_support/inflector'
+rescue LoadError
+  require 'extlib/inflection'
+  class String
+    def underscore
+      Extlib::Inflection.underscore(self)
+    end
+  end
+end
+
 module DataMapper
   module Is
 
@@ -12,7 +25,7 @@ module DataMapper
         # deepest_context = "::"
         # self_model_name = ClassName
         deepest_context, self_model_name = (self.name =~ /^(.*::)(.*)$/) ? [$1, $2] : ["::", self.name]
-        sane_self_model_name = self.name.gsub(/::/, "").snake_case
+        sane_self_model_name = self.name.gsub(/::/, "").underscore
 
         options = {
           :through     => "#{deepest_context}#{self_model_name}To#{self_model_name}",
@@ -28,8 +41,8 @@ module DataMapper
         intermediate_model = Object.full_const_get(options[:through])
         target_model       = self
 
-        source_fk = Extlib::Inflection.foreign_key(options[:source]).to_sym
-        target_fk = Extlib::Inflection.foreign_key(options[:target]).to_sym
+        source_fk = ActiveSupport::Inflector.foreign_key(options[:source]).to_sym
+        target_fk = ActiveSupport::Inflector.foreign_key(options[:target]).to_sym
 
         intermediate_model.class_eval do
           include DataMapper::Resource
